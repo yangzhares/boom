@@ -51,7 +51,7 @@ Options:
   -query                Set consul query mode
                         defaults to "default", can be set as "default", "stale" and "consistent".
   -dns                  Enable to test Consul DNS lookup performance
-                        defaults t0 "false".
+                        defaults to "false".
   -domain               Consul DNS domain, defaults to "consul".
 ~~~
 
