@@ -37,11 +37,22 @@ Options:
   -a  Basic authentication, username:password.
   -x  HTTP Proxy address as host:port.
 
+  -h2  Make HTTP/2 requests.
+
   -disable-compression  Disable compression.
   -disable-keepalive    Disable keep-alive, prevents re-use of TCP
                         connections between different HTTP requests.
   -cpus                 Number of used cpu cores.
-                        (default for current machine is 1 cores)
+                        (default for current machine is 4 cores)
+  -host                 HTTP Host header.
+  -conusl               Enable Consul test, defaults to false.
+  -type                 Test Consul kv, service register performance
+                        defaults to "", can be set as "kv","svc".
+  -query                Set consul query mode
+                        defaults to "default", can be set as "default", "stale" and "consistent".
+  -dns                  Enable to test Consul DNS lookup performance
+                        defaults t0 "false".
+  -domain               Consul DNS domain, defaults to "consul".
 ~~~
 
 This is what happens when you run Boom:
