@@ -57,9 +57,10 @@ var (
 	consul = flag.Bool("consul", false, "")
 	typ    = flag.String("type", "", "")
 	query  = flag.String("query", "default", "")
+	size   = flag.Int("size", 64, "")
 	// enable dns option to test Consul dns lookup performance
-	dns = flag.Bool("dns", false, "")
-	domain = flag.String("domain","consul", "")
+	//dns = flag.Bool("dns", false, "")
+	//domain = flag.String("domain","consul", "")
 
 	output = flag.String("o", "", "")
 
@@ -111,10 +112,13 @@ Options:
                         defaults to "", can be set as "kv","svc".
   -query                Set consul query mode
                         defaults to "default", can be set as "default", "stale" and "consistent".
-  -dns                  Enable to test Consul DNS lookup performance
-                        defaults t0 "false".
-  -domain               Consul DNS domain, defaults to "consul".
+  -size                 consul kv value size, defaults to 64 bytes. 
 `
+
+// -dns                  Enable to test Consul DNS lookup performance
+//                       defaults t0 "false".
+// -domain               Consul DNS domain, defaults to "consul".
+//`
 
 func main() {
 	flag.Usage = func() {
@@ -229,8 +233,9 @@ func main() {
 		Consul:             *consul,
 		Type:               *typ,
 		Query:              *query,
-		DNS:                *dns,
-		Domain:				*domain,
+		ValueSize:          *size,
+		//DNS:                *dns,
+		//Domain:				*domain,
 	}).Run()
 }
 

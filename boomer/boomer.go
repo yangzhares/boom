@@ -83,11 +83,12 @@ type Boomer struct {
 	results chan *result
 
 	//Enable consul kv, service register performance test
-	Consul bool
-	Type   string
-	Query  string
-	DNS    bool
-	Domain string
+	Consul    bool
+	Type      string
+	Query     string
+	ValueSize int
+	//	DNS    bool
+	//	Domain string
 }
 
 // Run makes all the requests, prints the summary. It blocks until
@@ -197,11 +198,12 @@ func (b *Boomer) runWorkers() {
 				b.runWorkerForConsul(workerNum, offset)
 				wg.Done()
 			}()
-		} else if b.DNS {
-			go func() {
-				b.dnslookup(workerNum, offset)
-				wg.Done()
-			}()
+			/*		} else if b.DNS {
+					go func() {
+						b.dnslookup(workerNum, offset)
+						wg.Done()
+					}()
+			*/
 		} else {
 			go func() {
 				b.runWorker(workerNum)

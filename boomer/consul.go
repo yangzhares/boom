@@ -9,6 +9,7 @@ import (
     "math/rand"
     "io/ioutil"
     "crypto/tls"
+	"os/exec"
 
     "golang.org/x/net/http2"
 )
@@ -20,7 +21,7 @@ func (b *Boomer) makeRequestForConsul(c *http.Client, typ string, body string, i
 
 	var urlSuffix string
 	if typ == "kv" {
-		urlSuffix = fmt.Sprintf("/v1/kv/consul_kv_%d", index)
+		urlSuffix = fmt.Sprintf("/v1/kv/bench/consul_kv_%d", index)
 		if b.Method == "GET" {
 			if b.Query == "stale" {
 				urlSuffix += "?stale"
@@ -51,13 +52,13 @@ func (b *Boomer) makeRequestForConsul(c *http.Client, typ string, body string, i
 	}
 }
 
-func generateConsulRequestBody(typ string, method string, index int) string {
+func generateConsulRequestBody(typ string, method string, size, index int) string {
 	//fmt.Printf("Index: %d\n", index)
 	var body string
 	if typ == "kv" {
 		//		key := fmt.Sprintf("consul_kv_%d",index)
 		if method == "PUT" {
-			body = MD5(GetRandomSalt())
+			body = value(size)
 		}
 	} else if typ == "svc" {
 		//		node := fmt.Sprintf("consul_service_%d.test.com,", index)
@@ -100,7 +101,16 @@ func (b *Boomer) runWorkerForConsul(n int, offset int) {
 		if b.Qps > 0 {
 			<-throttle
 		}
-		body := generateConsulRequestBody(b.Type, b.Method, i+offset)
+		body := generateConsulRequestBody(b.Type, b.Method, b.ValueSize, i+offset)
 		b.makeRequestForConsul(client, b.Type, body, i+offset)
 	}
+}
+
+func value(size int) string {
+	cmd := exec.Command("scripts/random.sh", strconv.Itoa(size))
+	val, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+	return string(val)
 }
