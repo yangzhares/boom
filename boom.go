@@ -24,7 +24,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/rakyll/boom/boomer"
+	"github.com/yangzhares/boom/boomer"
 )
 
 const (
@@ -114,12 +114,6 @@ Options:
                         defaults to "default", can be set as "default", "stale" and "consistent".
   -size                 consul kv value size, defaults to 64 bytes. 
 `
-
-// -dns                  Enable to test Consul DNS lookup performance
-//                       defaults t0 "false".
-// -domain               Consul DNS domain, defaults to "consul".
-//`
-
 func main() {
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, fmt.Sprintf(usage, runtime.NumCPU()))
