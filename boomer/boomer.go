@@ -198,12 +198,6 @@ func (b *Boomer) runWorkers() {
 				b.runWorkerForConsul(workerNum, offset)
 				wg.Done()
 			}()
-			/*		} else if b.DNS {
-					go func() {
-						b.dnslookup(workerNum, offset)
-						wg.Done()
-					}()
-			*/
 		} else {
 			go func() {
 				b.runWorker(workerNum)
