@@ -2,8 +2,10 @@ package boomer
 
 import (
 	"crypto/tls"
+	"fmt"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"os/exec"
 	"strconv"
@@ -63,24 +65,24 @@ func (b *Boomer) generateConsulRequestBody(typ string, method string, size int) 
 		//		id := fmt.Sprintf("consul_service_id_%d,", index)
 		//		service := fmt.Sprintf("consul_service_%d,", index)
 
-		// ip := "10." + strconv.Itoa(rand.Intn(256)) + "." + strconv.Itoa(rand.Intn(256)) + "." + strconv.Itoa(rand.Intn(256))
+		ip := "10." + strconv.Itoa(rand.Intn(256)) + "." + strconv.Itoa(rand.Intn(256)) + "." + strconv.Itoa(rand.Intn(256))
 		if method == "PUT" {
+			body = fmt.Sprintf("{\"Node\": \"node\",\"Address\": %q,"+
+				"\"Service\": {\"ID\": \"id\", \"Service\": \"service\","+
+				"\"Address\": %q, \"Port\": 8888}}", ip, ip)
+
 			/*
-				body = fmt.Sprintf("{\"Node\": \"consul_service_node_%d-%d\",\"Address\": %q,"+
-					"\"Service\": {\"ID\": \"consul_service_id_%d-%d\", \"Service\": \"consul_service_%d-%d\","+
-					"\"Address\": %q, \"Port\": 8888}}", b.C, index, ip, b.C, index, b.C, index, ip)
-			*/
-			body = `
-{
-	"Node": "node",
-	"Address": "10.10.10.10",
-	"Service": {
-		"ID": "id",
-		"Service": "service",
-		"Address": "10.10.10.10",
-		"Port": 8888
-	}
-}`
+			   			body = `
+			   {
+			   	"Node": "node",
+			   	"Address": "10.10.10.10",
+			   	"Service": {
+			   		"ID": "id",
+			   		"Service": "service",
+			   		"Address": "10.10.10.10",
+			   		"Port": 8888
+			   	}
+			   }`*/
 		}
 	}
 	return body
@@ -109,11 +111,12 @@ func (b *Boomer) runWorkerForConsul(n int) {
 	}
 	client := &http.Client{Transport: tr}
 
-	body := b.generateConsulRequestBody(b.Type, b.Method, b.ValueSize)
+	//body := b.generateConsulRequestBody(b.Type, b.Method, b.ValueSize)
 	for i := 0; i < n; i++ {
 		if b.Qps > 0 {
 			<-throttle
 		}
+		body := b.generateConsulRequestBody(b.Type, b.Method, b.ValueSize)
 		//body := b.generateConsulRequestBody(b.Type, b.Method, b.ValueSize, i+offset)
 		b.makeRequestForConsul(client, b.Type, body)
 	}
