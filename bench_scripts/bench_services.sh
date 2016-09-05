@@ -95,7 +95,7 @@ function client_write_service() {
     result="${out}/result_client_write_service_$2.csv"
     
     init
-    ../boom -n $1 -c $2 -o consul -f $result -m PUT -consul -type svc ${agent}
+    ./boom -n $1 -c $2 -o consul -f $result -m PUT -consul -type svc ${agent}
 }
 
 # client -> Consul Fellower -> Consul Leader
@@ -109,8 +109,11 @@ function server_write_service() {
     result="${out}/result_server_write_service_$2.csv"
     init
 
+    n=`expr $1 / 3`
+    c=`expr $2 / 3`
+
     for server in ${servers[@]}; do
-        ../boom -n $1 -c $2 -o consul -f $result -m PUT -consul -type svc ${server} &
+        ./boom -n $n -c $c -o consul -f $result -m PUT -consul -type svc ${server} &
     done
     sleep 3
 
@@ -156,11 +159,13 @@ function server_read_service() {
         mkdir -p ${out}
     fi 
     
+    n=`expr $1 / 3`
+    c=`expr $2 / 3`
     result="${out}/result_server_read_service_$2.csv"
     init
 
     for server in ${servers[@]}; do
-        ../boom -n $1 -c $2 -o consul -f $result -consul -type svc ${server}
+        ../boom -n $n -c $c -o consul -f $result -consul -type svc ${server}
     done
 }
 
@@ -328,8 +333,8 @@ for ((index=0; index<number; index++)) {
     #client_write_service 64 2
     #client_read_service 64 2
 
-    server_write_service 64 2
-    server_read_service 64 2
+    server_write_service 640 64
+    server_read_service 640 64
 }
 
 clean
