@@ -192,11 +192,11 @@ func (b *Boomer) runWorkers() {
 		//fmt.Printf("i: %d\n", i)
 		workerNum := b.N / b.C
 		//fmt.Printf("workerNum: %d\n", workerNum)
-		offset := workerNum * i
+		//offset := workerNum * i
 		//fmt.Printf("offset: %d\n", offset)
 		if b.Consul {
 			go func() {
-				b.runWorkerForConsul(workerNum, offset)
+				b.runWorkerForConsul(workerNum)
 				wg.Done()
 			}()
 		} else {

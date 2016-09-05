@@ -2,10 +2,8 @@ package boomer
 
 import (
 	"crypto/tls"
-	"fmt"
 	"io"
 	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"os/exec"
 	"strconv"
@@ -14,14 +12,14 @@ import (
 	"golang.org/x/net/http2"
 )
 
-func (b *Boomer) makeRequestForConsul(c *http.Client, typ string, body string, index int) {
+func (b *Boomer) makeRequestForConsul(c *http.Client, typ string, body string) {
 	s := time.Now()
 	var size int64
 	var code int
 
 	var urlSuffix string
 	if typ == "kv" {
-		urlSuffix = fmt.Sprintf("/v1/kv/bench/consul_kv_size-%d_%d", b.ValueSize, index)
+		urlSuffix = "/v1/kv/bench/consul"
 		if b.Method == "GET" {
 			if b.Query == "stale" {
 				urlSuffix += "?stale"
@@ -32,7 +30,7 @@ func (b *Boomer) makeRequestForConsul(c *http.Client, typ string, body string, i
 	} else {
 		urlSuffix = "/v1/catalog/register"
 		if b.Method == "GET" {
-			urlSuffix = fmt.Sprintf("/v1/catalog/service/consul_service_%d", index)
+			urlSuffix = "/v1/catalog/service/service"
 		}
 	}
 
@@ -52,7 +50,7 @@ func (b *Boomer) makeRequestForConsul(c *http.Client, typ string, body string, i
 	}
 }
 
-func (b *Boomer) generateConsulRequestBody(typ string, method string, size, index int) string {
+func (b *Boomer) generateConsulRequestBody(typ string, method string, size int) string {
 	//fmt.Printf("Index: %d\n", index)
 	var body string
 	if typ == "kv" {
@@ -65,17 +63,30 @@ func (b *Boomer) generateConsulRequestBody(typ string, method string, size, inde
 		//		id := fmt.Sprintf("consul_service_id_%d,", index)
 		//		service := fmt.Sprintf("consul_service_%d,", index)
 
-		ip := "10." + strconv.Itoa(rand.Intn(256)) + "." + strconv.Itoa(rand.Intn(256)) + "." + strconv.Itoa(rand.Intn(256))
+		// ip := "10." + strconv.Itoa(rand.Intn(256)) + "." + strconv.Itoa(rand.Intn(256)) + "." + strconv.Itoa(rand.Intn(256))
 		if method == "PUT" {
-			body = fmt.Sprintf("{\"Node\": \"consul_service_node_%d-%d\",\"Address\": %q,"+
-				"\"Service\": {\"ID\": \"consul_service_id_%d-%d\", \"Service\": \"consul_service_%d-%d\","+
-				"\"Address\": %q, \"Port\": 8888}}", b.C, index, ip, b.C, index, b.C, index, ip)
+			/*
+				body = fmt.Sprintf("{\"Node\": \"consul_service_node_%d-%d\",\"Address\": %q,"+
+					"\"Service\": {\"ID\": \"consul_service_id_%d-%d\", \"Service\": \"consul_service_%d-%d\","+
+					"\"Address\": %q, \"Port\": 8888}}", b.C, index, ip, b.C, index, b.C, index, ip)
+			*/
+			body = `
+{
+	"Node": "node",
+	"Address": "10.10.10.10",
+	"Service": {
+		"ID": "id",
+		"Service": "service",
+		"Address": "10.10.10.10",
+		"Port": 8888
+	}
+}`
 		}
 	}
 	return body
 }
 
-func (b *Boomer) runWorkerForConsul(n int, offset int) {
+func (b *Boomer) runWorkerForConsul(n int) {
 	var throttle <-chan time.Time
 	if b.Qps > 0 {
 		throttle = time.Tick(time.Duration(1e6/(b.Qps)) * time.Microsecond)
@@ -97,12 +108,14 @@ func (b *Boomer) runWorkerForConsul(n int, offset int) {
 		tr.TLSNextProto = make(map[string]func(string, *tls.Conn) http.RoundTripper)
 	}
 	client := &http.Client{Transport: tr}
+
+	body := b.generateConsulRequestBody(b.Type, b.Method, b.ValueSize)
 	for i := 0; i < n; i++ {
 		if b.Qps > 0 {
 			<-throttle
 		}
-		body := b.generateConsulRequestBody(b.Type, b.Method, b.ValueSize, i+offset)
-		b.makeRequestForConsul(client, b.Type, body, i+offset)
+		//body := b.generateConsulRequestBody(b.Type, b.Method, b.ValueSize, i+offset)
+		b.makeRequestForConsul(client, b.Type, body)
 	}
 }
 
