@@ -9,12 +9,12 @@ agent=http://127.0.0.1:8500
 
 bench=/tmp/bench/service
 
-leader=${bench}/leader
-server=${bench}/server
-client=${bench}/client
+leader_dir=${bench}/leader
+server_dir=${bench}/server
+client_dir=${bench}/client
 
-leader_write=${leader}/write
-leader_read=${leader}/read
+leader_write=${leader_dir}/write
+leader_read=${leader_dir}/read
 
 if [ ! -d ${leader_write} ]
 then
@@ -26,8 +26,8 @@ then
     mkdir -p ${leader_read}
 fi
 
-server_write=${server}/write
-server_read=${server}/read
+server_write=${server_dir}/write
+server_read=${server_dir}/read
 
 if [ ! -d ${server_write} ]
 then
@@ -39,8 +39,8 @@ then
     mkdir -p ${server_read}
 fi
 
-client_write=${client}/write
-client_read=${client}/read
+client_write=${client_dir}/write
+client_read=${client_dir}/read
 
 if [ ! -d ${client_write} ]
 then
