@@ -75,6 +75,7 @@ type Boomer struct {
 	// Output represents the output type. If "csv" is provided, the
 	// output will be dumped as a csv stream.
 	Output string
+	File   string
 
 	// ProxyAddr is the address of HTTP proxy server in the format on "host:port".
 	// Optional.
@@ -103,11 +104,11 @@ func (b *Boomer) Run() {
 	go func() {
 		<-c
 		// TODO(jbd): Progress bar should not be finalized.
-		newReport(b.N, b.results, b.Output, time.Now().Sub(start)).finalize()
+		newReport(b.N, b.results, b.Output, b.File, time.Now().Sub(start)).finalize()
 		os.Exit(1)
 	}()
 	b.runWorkers()
-	newReport(b.N, b.results, b.Output, time.Now().Sub(start)).finalize()
+	newReport(b.N, b.results, b.Output, b.File, time.Now().Sub(start)).finalize()
 	close(b.results)
 }
 

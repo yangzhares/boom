@@ -57,6 +57,7 @@ var (
 	consul = flag.Bool("consul", false, "")
 	typ    = flag.String("type", "", "")
 	query  = flag.String("query", "default", "")
+	file   = flag.String("f", "consul.csv", "")
 	size   = flag.Int("size", 64, "")
 	// enable dns option to test Consul dns lookup performance
 	//dns = flag.Bool("dns", false, "")
@@ -86,8 +87,9 @@ Options:
       be smaller than the concurency level.
   -q  Rate limit, in seconds (QPS).
   -o  Output type. If none provided, a summary is printed.
-      "csv" is the only supported alternative. Dumps the response
-      metrics in comma-seperated values format.
+      "csv" is the supported alternative. Dumps the response
+      metrics in comma-seperated values format. 
+  -f  Dumping results into file for consul benchmark testing.
 
   -m  HTTP method, one of GET, POST, PUT, DELETE, HEAD, OPTIONS.
   -H  Custom HTTP header. You can specify as many as needed by repeating the flag.
@@ -114,6 +116,7 @@ Options:
                         defaults to "default", can be set as "default", "stale" and "consistent".
   -size                 consul kv value size, defaults to 64 bytes. 
 `
+
 func main() {
 	flag.Usage = func() {
 		fmt.Fprint(os.Stderr, fmt.Sprintf(usage, runtime.NumCPU()))
@@ -172,10 +175,18 @@ func main() {
 		username, password = match[1], match[2]
 	}
 
-	if *output != "csv" && *output != "" {
-		usageAndExit("Invalid output type; only csv is supported.")
+	/*
+		if *output != "csv" && *output != "" {
+			usageAndExit("Invalid output type; only csv is supported.")
+		}
+	*/
+	if *output != "" {
+		if *output == "consul" && *file == "" {
+			usageAndExit("If consul is output type, -f must be set with filename.")
+		} else if *output != "csv" && *output != "consul" {
+			usageAndExit("Invalid output type; only csv and consul are supported.")
+		}
 	}
-
 	var proxyURL *gourl.URL
 	if *proxyAddr != "" {
 		var err error
@@ -224,6 +235,7 @@ func main() {
 		H2:                 *h2,
 		ProxyAddr:          proxyURL,
 		Output:             *output,
+		File:               *file,
 		Consul:             *consul,
 		Type:               *typ,
 		Query:              *query,

@@ -1,17 +1,17 @@
 package boomer
 
 import (
-    "time"
-    "fmt"
-    "io"
-    "net/http"
-    "strconv"
-    "math/rand"
-    "io/ioutil"
-    "crypto/tls"
+	"crypto/tls"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"math/rand"
+	"net/http"
 	"os/exec"
+	"strconv"
+	"time"
 
-    "golang.org/x/net/http2"
+	"golang.org/x/net/http2"
 )
 
 func (b *Boomer) makeRequestForConsul(c *http.Client, typ string, body string, index int) {
@@ -21,7 +21,7 @@ func (b *Boomer) makeRequestForConsul(c *http.Client, typ string, body string, i
 
 	var urlSuffix string
 	if typ == "kv" {
-		urlSuffix = fmt.Sprintf("/v1/kv/bench/consul_kv_%d", index)
+		urlSuffix = fmt.Sprintf("/v1/kv/bench/consul_kv_size-%d_%d", b.ValueSize, index)
 		if b.Method == "GET" {
 			if b.Query == "stale" {
 				urlSuffix += "?stale"
@@ -52,7 +52,7 @@ func (b *Boomer) makeRequestForConsul(c *http.Client, typ string, body string, i
 	}
 }
 
-func generateConsulRequestBody(typ string, method string, size, index int) string {
+func (b *Boomer) generateConsulRequestBody(typ string, method string, size, index int) string {
 	//fmt.Printf("Index: %d\n", index)
 	var body string
 	if typ == "kv" {
@@ -67,9 +67,9 @@ func generateConsulRequestBody(typ string, method string, size, index int) strin
 
 		ip := "10." + strconv.Itoa(rand.Intn(256)) + "." + strconv.Itoa(rand.Intn(256)) + "." + strconv.Itoa(rand.Intn(256))
 		if method == "PUT" {
-			body = fmt.Sprintf("{\"Node\": \"consul_service_%d.service.consul\",\"Address\": %q,"+
-				"\"Service\": {\"ID\": \"consul_service_id_%d\", \"Service\": \"consul_service_%d\","+
-				"\"Address\": %q, \"Port\": 8888}}", index, ip, index, index, ip)
+			body = fmt.Sprintf("{\"Node\": \"consul_service_node_%d-%d\",\"Address\": %q,"+
+				"\"Service\": {\"ID\": \"consul_service_id_%d-%d\", \"Service\": \"consul_service_%d-%d\","+
+				"\"Address\": %q, \"Port\": 8888}}", b.C, index, ip, b.C, index, b.C, index, ip)
 		}
 	}
 	return body
@@ -101,7 +101,7 @@ func (b *Boomer) runWorkerForConsul(n int, offset int) {
 		if b.Qps > 0 {
 			<-throttle
 		}
-		body := generateConsulRequestBody(b.Type, b.Method, b.ValueSize, i+offset)
+		body := b.generateConsulRequestBody(b.Type, b.Method, b.ValueSize, i+offset)
 		b.makeRequestForConsul(client, b.Type, body, i+offset)
 	}
 }

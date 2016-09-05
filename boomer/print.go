@@ -15,7 +15,9 @@
 package boomer
 
 import (
+	"encoding/csv"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -33,6 +35,7 @@ type report struct {
 	rps      float64
 
 	results chan *result
+	file    string
 	total   time.Duration
 
 	errorDist      map[string]int
@@ -43,10 +46,11 @@ type report struct {
 	output string
 }
 
-func newReport(size int, results chan *result, output string, total time.Duration) *report {
+func newReport(size int, results chan *result, output string, file string, total time.Duration) *report {
 	return &report{
 		output:         output,
 		results:        results,
+		file:           file,
 		total:          total,
 		statusCodeDist: make(map[int]int),
 		errorDist:      make(map[string]int),
@@ -81,6 +85,64 @@ func (r *report) print() {
 
 	if r.output == "csv" {
 		r.printCSV()
+		return
+	}
+
+	// dump results into a csv file named r.output, just only includes requests/sec,
+	// average response time and 90th percentile latency three fileds.
+	if r.output == "consul" {
+		var f *os.File
+		var err error
+		if _, err = os.Stat(r.file); err != nil {
+			if os.IsNotExist(err) {
+				//fmt.Printf("boom output file %s: %v is not exist", r.file, err)
+				f, err = os.Create(r.file)
+				if err != nil {
+					fmt.Printf("failed to create boom output file: %v", err)
+					return
+				}
+			}
+		} else {
+			f, err = os.OpenFile(r.file, os.O_APPEND|os.O_RDWR, 0644)
+			if err != nil {
+				fmt.Printf("failed to open boom output file: %v", err)
+				return
+			}
+		}
+
+		if len(r.lats) > 0 {
+			w := csv.NewWriter(f)
+			req := fmt.Sprintf("%4.4f", r.rps)
+			avg := fmt.Sprintf("%4.4f", r.average)
+
+			pctls := []int{10, 25, 50, 75, 90, 95, 99}
+			data := make([]float64, len(pctls))
+			var latency string
+			j := 0
+			for i := 0; i < len(r.lats) && j < len(pctls); i++ {
+				current := i * 100 / len(r.lats)
+				if current >= pctls[j] {
+					data[j] = r.lats[i]
+					j++
+				}
+			}
+			for i := 0; i < len(pctls); i++ {
+				if data[i] > 0 && pctls[i] == 90 {
+					latency = fmt.Sprintf("%4.4f", data[i])
+				}
+			}
+
+			//fmt.Printf("REQUESTS/sec:\t%s\nAVERAGE(sec): \t%s\n90TH PERCENTILE LATENCY(sec): \t%s\n", req, avg, latency)
+			record := []string{req, avg, latency}
+			//fmt.Printf("Record: %v\n", record)
+			err = w.Write(record)
+			if err != nil {
+				fmt.Printf("failed to write test result to csv file: %v", err)
+				return
+			}
+			w.Flush()
+			return
+		}
 		return
 	}
 
