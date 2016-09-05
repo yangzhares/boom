@@ -134,7 +134,7 @@ function leader_write_service() {
     result="${out}/result_leader_write_service_$2.csv"
     
     init
-    ../boom -n $1 -c $2 -o consul -f $result -m PUT -consul -type svc ${leader}
+    ./boom -n $1 -c $2 -o consul -f $result -m PUT -consul -type svc ${leader}
 }
 
 
@@ -148,7 +148,7 @@ function client_read_service() {
     result="${out}/result_client_read_service_$2.csv"
     
     init
-    ../boom -n $1 -c $2 -o consul -f $result -consul -type svc ${agent}
+    ./boom -n $1 -c $2 -o consul -f $result -consul -type svc ${agent}
 }
 
 # client -> Consul Fellower -> Consul Leader
@@ -165,7 +165,7 @@ function server_read_service() {
     init
 
     for server in ${servers[@]}; do
-        ../boom -n $n -c $c -o consul -f $result -consul -type svc ${server}
+        ./boom -n $n -c $c -o consul -f $result -consul -type svc ${server}
     done
 }
 
@@ -179,7 +179,7 @@ function leader_read_service() {
     result="${out}/result_leader_read_service_$2.csv"
     
     init
-    ../boom -n $1 -c $2 -o consul -f $result -consul -type svc ${leader}
+    ./boom -n $1 -c $2 -o consul -f $result -consul -type svc ${leader}
 }
 
 
