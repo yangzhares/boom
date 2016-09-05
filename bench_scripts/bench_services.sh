@@ -54,10 +54,6 @@ fi
 
 log=${bench}/service.log
 
-function clean() {
-    rm -f ${output}
-}
-
 function init() {
     if [ $index -eq 0 ] && [ -e $result ] 
     then
@@ -84,12 +80,7 @@ function init() {
 
 # client -> Consul client -> Consul Fellower -> Consul Leader
 function client_write_service() {
-    out=${client_write}/$1
-    if [ ! -d ${out} ]
-    then
-        mkdir -p ${out}
-    fi 
-    result="${out}/result_client_write_service_$1.csv"
+    result="${client_write}/result_client_write_service_$1.csv"
     
     init
     n=`expr $1 \* 100`
@@ -98,13 +89,7 @@ function client_write_service() {
 
 # client -> Consul Fellower -> Consul Leader
 function server_write_service() {
-    out=${server_write}/$1
-    if [ ! -d ${out} ]
-    then
-        mkdir -p ${out}
-    fi 
-    
-    result="${out}/result_server_write_service_$1.csv"
+    result="${server_write}/result_server_write_service_$1.csv"
     init
 
     c=`expr $1 / 3`
@@ -124,12 +109,7 @@ function server_write_service() {
 
 # client -> Consul Leader
 function leader_write_service() {
-    out=${leader_write}/$1
-    if [ ! -d ${out} ]
-    then
-        mkdir -p ${out}
-    fi 
-    result="${out}/result_leader_write_service_$1.csv"
+    result="${leader_write}/result_leader_write_service_$1.csv"
     
     init
     n=`expr $1 \* 100`
@@ -139,12 +119,7 @@ function leader_write_service() {
 
 # client -> Consul client -> Consul Fellower -> Consul Leader
 function client_read_service() {
-    out=${client_read}/$1
-    if [ ! -d ${out} ]
-    then
-        mkdir -p ${out}
-    fi 
-    result="${out}/result_client_read_service_$1.csv"
+    result="${client_read}/result_client_read_service_$1.csv"
     
     init
     n=`expr $1 \* 100`
@@ -153,15 +128,9 @@ function client_read_service() {
 
 # client -> Consul Fellower -> Consul Leader
 function server_read_service() {
-    out=${server_read}/$1
-    if [ ! -d ${out} ]
-    then
-        mkdir -p ${out}
-    fi 
-    
     c=`expr $1 / 3`
     n=`expr $1 / 3 \* 100`
-    result="${out}/result_server_read_service_$1.csv"
+    result="${server_read}/result_server_read_service_$1.csv"
     init
 
     for server in ${servers[@]}; do
@@ -171,12 +140,7 @@ function server_read_service() {
 
 # client -> Consul Leader
 function leader_read_service() {
-    out=${leader_read}/$1
-    if [ ! -d ${out} ]
-    then
-        mkdir -p ${out}
-    fi 
-    result="${out}/result_leader_read_service_$1.csv"
+    result="${leader_read}/result_leader_read_service_$1.csv"
     
     init
     n=`expr $1 \* 100`
